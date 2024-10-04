@@ -1,0 +1,23 @@
+{
+    "$schema": "https://dl.viam.dev/module.schema.json",
+    "module_id": "erh:viamroscli",
+    "visibility": "public",
+    "url": "https://github.com/erh/viamroscli",
+    "description": "module for integrating with ros via rostopic",
+    "models": [
+        {
+            "api": "rdk:component:sensor",
+            "model": "erh:viamroscli:generic-sensor"
+        }
+    ],
+    "entrypoint": "./bin/viamrosclimodule",
+    "build": {
+        "build": "make module",
+        "setup": "",
+        "path": "module.tar.gz",
+        "arch": [
+            "linux/amd64",
+            "linux/arm64"
+        ]
+    }
+}
