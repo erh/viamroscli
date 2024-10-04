@@ -47,22 +47,50 @@ func tryParseNumber(s string) (interface{}, bool) {
 		return nil, false
 	}
 
-	if !unicode.IsDigit(rune(s[0])) {
-		return nil, false
+	pos := 0
+	if s[pos] == '-' {
+		pos++
 	}
 
+	if !unicode.IsDigit(rune(s[pos])) {
+		return nil, false
+	}
+	pos++
+
 	hasDecimal := false
-	for _, d := range s {
-		if unicode.IsDigit(d) {
+	hasE := false
+	for idx := pos; idx < len(s); idx++ {
+		d := s[idx]
+
+		if idx < pos {
 			continue
 		}
+
+		if unicode.IsDigit(rune(d)) {
+			continue
+		}
+
 		if d == '.' {
-			if hasDecimal {
+			if hasDecimal || hasE {
 				return nil, false
 			}
 			hasDecimal = true
 			continue
 		}
+
+		if d == 'e' {
+			if hasE {
+				return nil, false
+			}
+			hasE = true
+
+			if idx+1 < len(s) && (s[idx+1] == '+' || s[idx+1] == '-') {
+				idx++
+			}
+
+			continue
+		}
+
 		return nil, false
 	}
 

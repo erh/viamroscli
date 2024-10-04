@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"go.viam.com/rdk/logging"
 	"go.viam.com/test"
 )
 
@@ -80,6 +81,8 @@ func TestStream2(t *testing.T) {
 }
 
 func TestTryParseNumber(t *testing.T) {
+	logger := logging.NewTestLogger(t)
+
 	n, isNumber := tryParseNumber("123")
 	test.That(t, isNumber, test.ShouldBeTrue)
 	test.That(t, n, test.ShouldEqual, 123)
@@ -90,6 +93,42 @@ func TestTryParseNumber(t *testing.T) {
 
 	_, isNumber = tryParseNumber("1a23")
 	test.That(t, isNumber, test.ShouldBeFalse)
+
+	type tt struct {
+		in  string
+		out interface{}
+	}
+
+	tts := []tt{
+		{"1", 1},
+		{"5.4", 5.4},
+		{"-1", -1},
+		{"-5.4", -5.4},
+		{"-1.14591559026e+12", -1.14591559026e+12},
+		{"-1.14591559026e12", -1.14591559026e+12},
+		{"-1.14591559026e-12", -1.14591559026e-12},
+	}
+
+	for _, ttt := range tts {
+		logger.Infof("test: %v\n", ttt)
+		n, isNumber := tryParseNumber(ttt.in)
+		test.That(t, isNumber, test.ShouldBeTrue)
+		test.That(t, n, test.ShouldEqual, ttt.out)
+	}
+
+	bad := []string{
+		"--",
+		"-5-5",
+		"5.5.5.5",
+		"-1.14591559026e12e",
+	}
+
+	for _, b := range bad {
+		logger.Infof("test: %v\n", b)
+		_, isNumber := tryParseNumber(b)
+		test.That(t, isNumber, test.ShouldBeFalse)
+	}
+
 }
 
 func TestParseValue1(t *testing.T) {
