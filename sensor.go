@@ -10,7 +10,6 @@ import (
 	"go.viam.com/rdk/resource"
 )
 
-
 var ModelGenericSensor = family.WithModel("generic-sensor")
 
 func init() {
@@ -24,7 +23,7 @@ func init() {
 
 type genericSensorConfig struct {
 	RosRoot string `json:"ros_root"`
-	Topic string
+	Topic   string
 }
 
 func (cfg genericSensorConfig) Validate(path string) ([]string, error) {
@@ -45,7 +44,7 @@ func newGenericSensor(ctx context.Context, deps resource.Dependencies, config re
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return s, nil
 }
 
@@ -56,7 +55,7 @@ type genericSensor struct {
 	logger logging.Logger
 	config *genericSensorConfig
 
-	lock sync.Mutex
+	lock      sync.Mutex
 	lastValue map[string]interface{}
 	lastError error
 }

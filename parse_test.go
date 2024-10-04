@@ -1,6 +1,7 @@
 package viamroscli
 
 import (
+	"context"
 	"io"
 	"os"
 	"testing"
@@ -15,10 +16,10 @@ func TestStream1(t *testing.T) {
 
 	c := make(chan []string, 100)
 	num := 0
-	
+
 	go func() {
 		for {
-			m, more:= <- c
+			m, more := <-c
 			if !more {
 				return
 			}
@@ -27,8 +28,8 @@ func TestStream1(t *testing.T) {
 			num++
 		}
 	}()
-	
-	err = stream(in, c)
+
+	err = stream(context.Background(), in, c)
 	test.That(t, err, test.ShouldEqual, io.EOF)
 
 	for i := 0; i < 100; i++ {
@@ -37,9 +38,9 @@ func TestStream1(t *testing.T) {
 			break
 		}
 	}
-	
+
 	close(c)
-	
+
 	test.That(t, num, test.ShouldEqual, 12)
 }
 
@@ -49,10 +50,10 @@ func TestStream2(t *testing.T) {
 
 	c := make(chan []string, 100)
 	num := 0
-	
+
 	go func() {
 		for {
-			m, more:= <- c
+			m, more := <-c
 			if !more {
 				return
 			}
@@ -62,8 +63,8 @@ func TestStream2(t *testing.T) {
 			num++
 		}
 	}()
-	
-	err = stream(in, c)
+
+	err = stream(context.Background(), in, c)
 	test.That(t, err, test.ShouldEqual, io.EOF)
 
 	for i := 0; i < 100; i++ {
@@ -72,9 +73,9 @@ func TestStream2(t *testing.T) {
 			break
 		}
 	}
-	
+
 	close(c)
-	
+
 	test.That(t, num, test.ShouldEqual, 2)
 }
 
@@ -110,13 +111,12 @@ func TestParseValue1(t *testing.T) {
 
 	v, err = parseValue("[5,6]")
 	test.That(t, err, test.ShouldBeNil)
-	test.That(t, v, test.ShouldResemble, []interface{}{5,6})
+	test.That(t, v, test.ShouldResemble, []interface{}{5, 6})
 
 }
 
-
 func TestParse1(t *testing.T) {
-	m, err := parseMessage([]string{ "data: False", "x: 5", "y:\"4\"" })
+	m, err := parseMessage([]string{"data: False", "x: 5", "y:\"4\""})
 	test.That(t, err, test.ShouldBeNil)
 	test.That(t, len(m), test.ShouldEqual, 3)
 	test.That(t, m["data"], test.ShouldEqual, false)
@@ -124,27 +124,26 @@ func TestParse1(t *testing.T) {
 	test.That(t, m["y"], test.ShouldEqual, "4")
 }
 
-
 func TestParseMsg1(t *testing.T) {
 	in, err := os.Open("testdata/msg1.txt")
 	test.That(t, err, test.ShouldBeNil)
 
 	c := make(chan []string, 100)
-	
-	err = stream(in, c)
+
+	err = stream(context.Background(), in, c)
 	test.That(t, err, test.ShouldEqual, io.EOF)
 
-	lines := <- c
+	lines := <-c
 
 	close(c)
 
 	test.That(t, len(lines), test.ShouldEqual, 8)
-	
+
 	msg, err := parseMessage(lines)
 	test.That(t, err, test.ShouldBeNil)
 
 	test.That(t, msg["format"], test.ShouldEqual, "jpeg")
-	test.That(t, msg["data"], test.ShouldResemble, []interface{}{ 255, 216, 255, 219})
+	test.That(t, msg["data"], test.ShouldResemble, []interface{}{255, 216, 255, 219})
 
 	m2, ok := msg["header"].(map[string]interface{})
 	test.That(t, ok, test.ShouldBeTrue)
@@ -156,5 +155,4 @@ func TestParseMsg1(t *testing.T) {
 	test.That(t, m3["secs"], test.ShouldEqual, 1728049567)
 	test.That(t, m3["nsecs"], test.ShouldEqual, 678641408)
 
-	
 }

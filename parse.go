@@ -2,32 +2,37 @@ package viamroscli
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
-	"unicode"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
-func stream(rawIn io.Reader,msgHandler chan []string) error {
+func stream(ctx context.Context, rawIn io.Reader, msgHandler chan []string) error {
 	in := bufio.NewReader(rawIn)
 
 	lines := []string{}
-	
+
 	for {
+		err := ctx.Err()
+		if err != nil {
+			return err
+		}
+
 		data, err := in.ReadString('\n')
 		if err != nil {
 			return err
 		}
 
 		data = strings.TrimRight(data, " \r\n")
-		
+
 		if data == "---" {
 			msgHandler <- lines
 			lines = []string{}
 			continue
 		}
-
 
 		lines = append(lines, data)
 
@@ -37,7 +42,7 @@ func stream(rawIn io.Reader,msgHandler chan []string) error {
 
 func tryParseNumber(s string) (interface{}, bool) {
 	s = strings.TrimSpace(s)
-	
+
 	if len(s) == 0 {
 		return nil, false
 	}
@@ -62,7 +67,7 @@ func tryParseNumber(s string) (interface{}, bool) {
 	}
 
 	if hasDecimal {
-		x, err := strconv.ParseFloat(s, 64)				
+		x, err := strconv.ParseFloat(s, 64)
 		if err != nil {
 			return nil, false
 		}
@@ -78,7 +83,7 @@ func tryParseNumber(s string) (interface{}, bool) {
 
 func parseValue(s string) (interface{}, error) {
 	s = strings.TrimSpace(s)
-	
+
 	if len(s) == 0 {
 		return nil, nil
 	}
@@ -91,10 +96,10 @@ func parseValue(s string) (interface{}, error) {
 	}
 
 	if s[0] == '"' {
-		if s[len(s) -1] != '"' {
+		if s[len(s)-1] != '"' {
 			return nil, fmt.Errorf("invalid string (%s)", s)
 		}
-		return s[1:len(s) - 1], nil
+		return s[1 : len(s)-1], nil
 	}
 
 	if s[0] == '[' {
@@ -102,9 +107,9 @@ func parseValue(s string) (interface{}, error) {
 		if s[len(s)-1] != ']' {
 			return nil, fmt.Errorf("invalid array %v", s)
 		}
-		x = x[0:len(x)-1]
+		x = x[0 : len(x)-1]
 		pcs := strings.Split(x, ",")
-		
+
 		arr := []interface{}{}
 
 		for _, p := range pcs {
@@ -114,15 +119,15 @@ func parseValue(s string) (interface{}, error) {
 			}
 			arr = append(arr, v)
 		}
-		
+
 		return arr, nil
 	}
-	
+
 	n, isNumber := tryParseNumber(s)
 	if isNumber {
 		return n, nil
 	}
-	
+
 	return s, nil
 }
 
@@ -143,12 +148,12 @@ func (s *stack) addToTop(n string, v interface{}) {
 	m[n] = v
 }
 
-func (s *stack) bottom() map[string]interface{}{
+func (s *stack) bottom() map[string]interface{} {
 	return s.m[0]
 }
 
 func (s *stack) pop() {
-	s.m = s.m[0:len(s.m)-1]
+	s.m = s.m[0 : len(s.m)-1]
 }
 
 func parseMessage(lines []string) (map[string]interface{}, error) {
@@ -157,7 +162,7 @@ func parseMessage(lines []string) (map[string]interface{}, error) {
 	s.pushNew("")
 
 	nextIndent := 0
-	
+
 	for _, l := range lines {
 		split := strings.SplitN(l, ":", 2)
 		if len(split) != 2 {
@@ -178,7 +183,7 @@ func parseMessage(lines []string) (map[string]interface{}, error) {
 		}
 
 		name = strings.TrimSpace(name)
-		
+
 		rest := strings.TrimSpace(split[1])
 		if rest == "" {
 			s.pushNew(name)
@@ -186,7 +191,7 @@ func parseMessage(lines []string) (map[string]interface{}, error) {
 			continue
 		}
 		v, err := parseValue(rest)
-		if err != nil  {
+		if err != nil {
 			return nil, fmt.Errorf("field: %s error parsing value (%s): %v", name, rest, err)
 		}
 		s.addToTop(name, v)
@@ -194,4 +199,3 @@ func parseMessage(lines []string) (map[string]interface{}, error) {
 
 	return s.bottom(), nil
 }
-
