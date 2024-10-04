@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"go.viam.com/rdk/components/camera"
 	"go.viam.com/rdk/components/sensor"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/module"
@@ -27,6 +28,11 @@ func realMain() error {
 	}
 
 	err = myMod.AddModelFromRegistry(ctx, sensor.API, viamroscli.ModelGenericSensor)
+	if err != nil {
+		return err
+	}
+
+	err = myMod.AddModelFromRegistry(ctx, camera.API, viamroscli.ModelCamera)
 	if err != nil {
 		return err
 	}

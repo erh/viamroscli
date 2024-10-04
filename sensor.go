@@ -17,25 +17,13 @@ func init() {
 	resource.RegisterComponent(
 		sensor.API,
 		ModelGenericSensor,
-		resource.Registration[sensor.Sensor, *genericSensorConfig]{
+		resource.Registration[sensor.Sensor, *rostopicConfig]{
 			Constructor: newGenericSensor,
 		})
 }
 
-type genericSensorConfig struct {
-	RosRoot string `json:"ros_root"`
-	Topic   string
-}
-
-func (cfg genericSensorConfig) Validate(path string) ([]string, error) {
-	if cfg.Topic == "" {
-		return nil, fmt.Errorf("need ropic")
-	}
-	return nil, nil
-}
-
 func newGenericSensor(ctx context.Context, deps resource.Dependencies, config resource.Config, logger logging.Logger) (sensor.Sensor, error) {
-	newConf, err := resource.NativeConfig[*genericSensorConfig](config)
+	newConf, err := resource.NativeConfig[*rostopicConfig](config)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +42,7 @@ type genericSensor struct {
 
 	name   resource.Name
 	logger logging.Logger
-	config *genericSensorConfig
+	config *rostopicConfig
 
 	lock      sync.Mutex
 	lastValue map[string]interface{}

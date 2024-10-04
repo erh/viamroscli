@@ -12,6 +12,18 @@ import (
 
 var family = resource.ModelNamespace("erh").WithFamily("viamroscli")
 
+type rostopicConfig struct {
+	RosRoot string `json:"ros_root"`
+	Topic   string
+}
+
+func (cfg rostopicConfig) Validate(path string) ([]string, error) {
+	if cfg.Topic == "" {
+		return nil, fmt.Errorf("need topic")
+	}
+	return nil, nil
+}
+
 // runs in foreground, doesn't retry, etc.
 // that should be done on top of this
 func runRosTopic(ctx context.Context, root string, topic string, out chan []string, logger logging.Logger) error {
