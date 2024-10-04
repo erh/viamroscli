@@ -95,7 +95,7 @@ func (cs *genericSensor) runReceiver(ctx context.Context) {
 			if err != nil {
 				cs.logger.Errorf("error parsing message %v", err)
 			}
-			msg["_ts"] = time.Now()
+			msg["_ts"] = time.Now().Format(time.RFC822Z)
 
 			cs.lock.Lock()
 			cs.lastValue = msg
