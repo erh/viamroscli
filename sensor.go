@@ -41,7 +41,7 @@ func newGenericSensor(ctx context.Context, deps resource.Dependencies, config re
 	}
 
 	s := &genericSensor{name: config.ResourceName(), config: newConf, logger: logger}
-	err = s.start(ctx)
+	err = s.start()
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,8 @@ type genericSensor struct {
 	cancel context.CancelFunc
 }
 
-func (cs *genericSensor) start(ctx context.Context) error {
+func (cs *genericSensor) start() error {
+	ctx := context.Background()
 	if cs.cancel != nil {
 		return fmt.Errorf("already started")
 	}
