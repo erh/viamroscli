@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 	"unicode"
@@ -226,4 +227,23 @@ func parseMessage(lines []string) (map[string]interface{}, error) {
 	}
 
 	return s.bottom(), nil
+}
+
+func read1MessageFromAFile(fn string) (map[string]interface{}, error) {
+	in, err := os.Open(fn)
+	if err != nil {
+		return nil, err
+	}
+
+	c := make(chan []string, 100)
+	defer close(c)
+
+	err = stream(context.Background(), in, c)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	lines := <-c
+
+	return parseMessage(lines)
 }

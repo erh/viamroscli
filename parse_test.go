@@ -194,4 +194,8 @@ func TestParseMsg1(t *testing.T) {
 	test.That(t, m3["secs"], test.ShouldEqual, 1728049567)
 	test.That(t, m3["nsecs"], test.ShouldEqual, 678641408)
 
+	mm, err := read1MessageFromAFile("testdata/msg1.txt")
+	test.That(t, err, test.ShouldBeNil)
+	test.That(t, mm, test.ShouldResemble, msg)
+
 }
