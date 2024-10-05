@@ -2,7 +2,7 @@
 module: module.tar.gz
 
 bin/viamrosclimodule: go.mod *.go cmd/module/*.go
-	go build -tags osusergo,netgo -ldflags="-extldflags=-static -s -w" -o $@ cmd/module/cmd.go
+	go build -tags no_cgo,osusergo,netgo -ldflags="-extldflags=-static -s -w" -o $@ cmd/module/cmd.go
 
 lint:
 	gofmt -s -w .
