@@ -5,7 +5,20 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+            target_os: linux
+            target_arch: amd64
+          - platform: linux/arm64
+            runner: buildjet-8vcpu-ubuntu-2204-arm
+            target_os: linux
+            target_arch: arm64
+
+    runs-on: ${{ matrix.runner }}
+
     steps:
     - uses: actions/checkout@v3
     - uses: viamrobotics/build-action@v1

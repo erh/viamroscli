@@ -32,11 +32,9 @@ func realMain() error {
 		return err
 	}
 
-	if false {
-		err = myMod.AddModelFromRegistry(ctx, camera.API, viamroscli.ModelCamera)
-		if err != nil {
-			return err
-		}
+	err = myMod.AddModelFromRegistry(ctx, camera.API, viamroscli.ModelCamera)
+	if err != nil {
+		return err
 	}
 
 	err = myMod.Start(ctx)
