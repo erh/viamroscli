@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"go.viam.com/rdk/components/camera"
+	"go.viam.com/rdk/gostream"
 	"go.viam.com/rdk/logging"
+	"go.viam.com/rdk/pointcloud"
 	"go.viam.com/rdk/resource"
 )
 
@@ -31,21 +33,19 @@ func newCamera(ctx context.Context, deps resource.Dependencies, config resource.
 		return nil, err
 	}
 
-	s := &rosCamera{config: newConf, logger: logger}
+	s := &rosCamera{name: config.ResourceName(), config: newConf, logger: logger}
 	err = s.start()
 	if err != nil {
 		return nil, err
 	}
 
-	src, err := camera.NewVideoSourceFromReader(ctx, s, nil, camera.ColorStream)
-	if err != nil {
-		return nil, err
-	}
-
-	return camera.FromVideoSource(config.ResourceName(), src, logger), nil
+	return s, nil
 }
 
 type rosCamera struct {
+	resource.AlwaysRebuild
+
+	name   resource.Name
 	logger logging.Logger
 	config *rostopicConfig
 
@@ -135,6 +135,34 @@ func (rc *rosCamera) Read(ctx context.Context) (image.Image, func(), error) {
 	rc.lock.Lock()
 	defer rc.lock.Unlock()
 	return rc.lastValue, nil, rc.lastError
+}
+
+func (rc *rosCamera) Images(ctx context.Context) ([]camera.NamedImage, resource.ResponseMetadata, error) {
+	return nil, resource.ResponseMetadata{}, fmt.Errorf("e1")
+}
+
+func (rc *rosCamera) Stream(ctx context.Context, errHandlers ...gostream.ErrorHandler) (gostream.VideoStream, error) {
+	return nil, fmt.Errorf("e2")
+}
+
+func (rc *rosCamera) NextPointCloud(ctx context.Context) (pointcloud.PointCloud, error) {
+	return nil, fmt.Errorf("e3")
+}
+
+func (rc *rosCamera) Properties(ctx context.Context) (camera.Properties, error) {
+	return camera.Properties{ImageType: camera.ColorStream}, nil
+}
+
+func (rc *rosCamera) Readings(ctx context.Context, extra map[string]interface{}) (map[string]interface{}, error) {
+	return nil, nil
+}
+
+func (rc *rosCamera) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
+	return nil, nil
+}
+
+func (rc *rosCamera) Name() resource.Name {
+	return rc.name
 }
 
 func (rc *rosCamera) Close(ctx context.Context) error {
