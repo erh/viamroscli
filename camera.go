@@ -134,6 +134,9 @@ func (rc *rosCamera) run(ctx context.Context) {
 func (rc *rosCamera) Read(ctx context.Context) (image.Image, func(), error) {
 	rc.lock.Lock()
 	defer rc.lock.Unlock()
+	if rc.lastValue == nil && rc.lastError == nil {
+		return nil, nil, fmt.Errorf("no image yet")
+	}
 	return rc.lastValue, nil, rc.lastError
 }
 
